@@ -174,7 +174,7 @@ begin
     		sda_o      => uid_sda_o,                        -- I2C data from NEO
     		sda_i      => uid_sda_i,
     		use_rarp_o => neo430_RARP_select,
-    		gp_o       => gp_o,
+    		gp_o       => open,
     		ip_addr_o  => s_neo430_ip_addr,
     		mac_addr_o => s_neo430_mac_addr,
     		ipbus_rst_o => neo430_nuke
