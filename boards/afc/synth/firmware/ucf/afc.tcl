@@ -45,6 +45,19 @@ set_property PACKAGE_PIN AK15 [get_ports eth_rx_n]
 set_property PACKAGE_PIN AL14 [get_ports eth_tx_p]
 set_property PACKAGE_PIN AM14 [get_ports eth_tx_n]
 
+# UART pins (not always used). Unfortunately can either be 2V5 or 3V3. 
+# Depends on what VAUX is set to.
+if { [llength [get_ports {FTDI*}]] > 0} {
+    #if { $FTDI_IO_VOLTAGE == 33} {
+    #    set_property IOSTANDARD LVCMOS33 [get_port {FTDI_*}]
+    #} else {
+    #    set_property IOSTANDARD LVCMOS25 [get_port {FTDI_*}]
+    #}
+    set_property IOSTANDARD LVCMOS25 [get_port {FTDI_*}]
+    set_property PACKAGE_PIN Y11 [get_port {FTDI_RXD}]
+    set_property PACKAGE_PIN AB11 [get_port {FTDI_TXD}]
+}
+
 
 # Clocks derived from system clock
 create_generated_clock -name ipbus_clk -source [get_pins infra/clocks/mmcm/CLKIN1] [get_pins infra/clocks/mmcm/CLKOUT1]
