@@ -181,10 +181,16 @@ begin
 			);
     end generate gen_softcore;
 
-        -- combine resets
+    -- If soft core not used need to tie I2C line high.
+    gen_neo_i2c: if USE_NEO430 = false generate
+        uid_scl_o <= '1';
+        uid_sda_o <= '1';
+    end generate gen_neo_i2c;
+	
+	-- combine resets
 	internal_nuke <= nuke or neo430_nuke;
         
--- Ethernet MAC core and PHY interface
+	-- Ethernet MAC core and PHY interface
 	
 	eth: entity work.eth_7s_1000basex_gtp
 		port map(
