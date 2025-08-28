@@ -24,20 +24,10 @@
 #-------------------------------------------------------------------------------
 
 
-src afc_infra.vhd
 
-# The output of the compilation of the C running on the NEO.
-# To rebuild, use gcc-msp430 and the s/ware in the s/ware sub directory
-src -c enclustra:components/neo430_wrapper neo430_application_image_afc-v4.vhd
-# for enclustra use neo430_application_image_macprom.vhd
-
-include -c enclustra:components/neo430_wrapper neo430_wrapper.dep
-
-src -c ipbus-firmware:components/ipbus_util clocks/clocks_7s_serdes.vhd ipbus_clock_div.vhd led_stretcher.vhd
-src -c ipbus-firmware:components/ipbus_util masters/ipbus_ctrl.vhd
-include -c ipbus-firmware:components/ipbus_transport_udp
-include -c ipbus-firmware:components/ipbus_eth artix_basex.dep
-src -c ipbus-firmware:components/ipbus_core ipbus_fabric_sel.vhd ipbus_package.vhd
-
-# Pull in TCL that will put neo430_package etc. into neo430, not work.
-setup  -c enclustra:components/neo430_wrapper -f ../cfg/neo430_afc-v4.tcl
+setup settings_v7.tcl
+include a200.dep
+include afc_infra.dep
+src -c ipbus-firmware:components/ipbus_core ipbus_package.vhd
+src --cd ../ucf afc_v4.tcl
+src -c ipbus-firmware:components/ipbus_util --cd ../ucf clock_utils.tcl
