@@ -46,7 +46,8 @@ entity afc_infra is
                                          -- NEO430 soft-core to read MAC/IP
           NEO430_CLOCK_SPEED : natural := 31250000 ; -- soft core clock speed
           FORCE_RARP : boolean := False; -- Set True in order to force use of RARP, regardless of PROM
-          UID_I2C_ADDR : std_logic_vector(7 downto 0) := x"53" -- Address on I2C bus of E24AA025E
+          UID_I2C_ADDR : std_logic_vector(7 downto 0) := x"53"; -- Address on I2C bus of E24AA025E
+		  FIB_CLK_OUT: std_logic := '1' -- '1' FIB clock is an output, '0' opposite
 		); 
 	port(
 		eth_clk_p: in std_logic; -- 125MHz MGT clock
@@ -111,6 +112,7 @@ architecture rtl of afc_infra is
         sda_o      : OUT    std_logic;                      -- I2C data from NEO
         sda_i      : IN     std_logic;
         gp_o       : OUT    std_logic_vector(11 downto 0);  -- General purpose output. Used in DUNE to define the endpoint ID
+		gp_i       : IN  	std_logic_vector(7 downto 0);   -- General purpose output. Used in DUNE to define the endpoint ID
         use_rarp_o : OUT    std_logic;                      -- If high then IPBus should use RARP, not fixed IP
         ip_addr_o  : OUT    std_logic_vector(31 downto 0);  -- IP address to give to IPBus core
         mac_addr_o : OUT    std_logic_vector(47 downto 0);  -- MAC address to give to IPBus core
@@ -128,7 +130,8 @@ architecture rtl of afc_infra is
     signal neo430_RARP_select , RARP_select : std_logic := '0'; -- set high to use RARP
     signal osc_clk , osc_clk_div4 : std_logic ; -- 125MHz clk before and after bufr
     signal s_gp_o : std_logic_vector(11 downto 0);
-    
+    signal s_gp_i : std_logic_vector(7 downto 0);
+
     -- debugging 
     --signal s_uart_txd : STD_LOGIC ; -- for debugging
    
@@ -210,14 +213,15 @@ begin
            );
    
         osc_clk_o <= osc_clk;
-        
+
 --        -- purely debugging
 --         dummy_count <= not dummy_count when rising_edge(osc_clk_div4);
 --         s_uart_aux_txd <= s_uart_txd  when rising_edge(osc_clk_div4);
 --         s_uart_aux_rxd <= uart_aux_rxd_i  when rising_edge(osc_clk_div4);
 --         -- reconnect to uart_aux_txd_o  to  ipbus_neo430_wrapper after debugging.
 --         uart_aux_txd_o <= s_uart_txd ;
-         
+
+	s_gp_i <= "0000000" & FIB_CLK_OUT;
 	soft_core_cpu: ipbus_neo430_wrapper
 		generic map(
                   CLOCK_SPEED =>  NEO430_CLOCK_SPEED, -- 31.25MHz clock from oscillator module
@@ -235,11 +239,12 @@ begin
     		sda_i      => uid_sda_i,
     		use_rarp_o => neo430_RARP_select,
     		gp_o       => s_gp_o,
+			gp_i 	   => s_gp_i,
     		ip_addr_o  => s_neo430_ip_addr,
     		mac_addr_o => s_neo430_mac_addr,
     		ipbus_rst_o => neo430_nuke
 			);
-			
+
 	   i2c_mux_sel <= s_gp_o(0); -- which I2C bus should we use?
 	   
     end generate gen_softcore;
